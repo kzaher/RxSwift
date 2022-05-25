@@ -41,6 +41,32 @@ extension PrimitiveSequenceConcurrencyTests {
             XCTAssertTrue(true)
         }
     }
+    
+    func testSingleEmitsElementFromAwait() async throws {
+        let single = Single.from {
+            return "Hello"
+        }
+        
+        do {
+            let value = try await single.value
+            XCTAssertEqual(value, "Hello")
+        } catch {
+            XCTFail("Should not throw an error")
+        }
+    }
+    
+    func testSingleThrowsErrorFromAwait() async throws {
+        let single = Single<String>.from {
+            throw RxError.unknown
+        }
+        
+        do {
+            _ = try await single.value
+            XCTFail("Should not proceed beyond try")
+        } catch {
+            XCTAssertTrue(true)
+        }
+    }
 }
 
 // MARK: - Maybe
@@ -79,6 +105,44 @@ extension PrimitiveSequenceConcurrencyTests {
             XCTAssertTrue(true)
         }
     }
+    
+    func testMaybeEmitsElementFromAwait() async throws {
+        let maybe = Maybe.from {
+            "Hello"
+        }
+        
+        do {
+            let value = try await maybe.value
+            XCTAssertNotNil(value)
+            XCTAssertEqual(value, "Hello")
+        } catch {
+            XCTFail("Should not throw an error")
+        }
+    }
+    
+    func testsAsMaybeEmitsWithoutValue() async throws {
+        let maybe = Maybe<String>.from(nil)
+        
+        do {
+            let value = try await maybe.value
+            XCTAssertNil(value)
+        } catch {
+            XCTFail("Should not throw an error")
+        }
+    }
+    
+    func testMaybeThrowsErrorFromAwait() async throws {
+        let maybe = Maybe<String>.from {
+            throw RxError.unknown
+        }
+
+        do {
+            _ = try await maybe.value
+            XCTFail("Should not proceed beyond try")
+        } catch {
+            XCTAssertTrue(true)
+        }
+    }
 }
 
 // MARK: - Completable
@@ -97,6 +161,32 @@ extension PrimitiveSequenceConcurrencyTests {
 
     func testCompletableThrowsError() async throws {
         let completable = Completable.error(RxError.unknown)
+
+        do {
+            _ = try await completable.value
+            XCTFail("Should not proceed beyond try")
+        } catch {
+            XCTAssertTrue(true)
+        }
+    }
+    
+    func testCompletableEmitsElementFromAwait() async throws {
+        let completable = Completable.from {
+            
+        }
+        
+        do {
+            let value: Void = try await completable.value
+            XCTAssert(value == ())
+        } catch {
+            XCTFail("Should not throw an error")
+        }
+    }
+    
+    func testCompletableThrowsErrorFromAwait() async throws {
+        let completable = Completable.from {
+            throw RxError.unknown
+        }
 
         do {
             _ = try await completable.value

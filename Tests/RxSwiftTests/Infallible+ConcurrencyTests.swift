@@ -35,5 +35,20 @@ extension InfallibleConcurrencyTests {
             }
         }
     }
+    
+    func testInfailablelEmitsElementFromAwait() async throws {
+        let infailable = Infallible.from {
+            return "Hello"
+        }
+        
+        var didLoop = false
+        
+        for try await value in infailable.values {
+            XCTAssertEqual(value, "Hello")
+            didLoop = true
+        }
+        
+        XCTAssertTrue(didLoop)
+    }
 }
 #endif
